@@ -100,7 +100,7 @@ model Workspace {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+ 
   members      WorkspaceMember[]
   projects     Project[]
   invitations  Invitation[]
