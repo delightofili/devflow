@@ -52,11 +52,11 @@ export default function Sidebar({
   ];
 
   return (
-    <aside className="w-60 h-full bg-[#111] border-r border-[#1a1a1a] flex flex-col flex-shrink-0">
+    <aside className="w-60 h-full bg-[#111] border-r border-[#1a1a1a] flex flex-col shrink-0">
       {/* workspace switcher */}
       <div className="p-4 border-b border-[#1a1a1a]">
         <button className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-[#1a1a1a] transition-colors group">
-          <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center flex-shrink-0">
+          <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
             <span className="text-white text-xs font-bold">
               {workspace?.name?.charAt(0) || "W"}
             </span>
@@ -84,7 +84,7 @@ export default function Sidebar({
                   : "text-[#888] hover:text-white hover:bg-[#1a1a1a]"
               }`}
             >
-              <Icon className="w-4 h-4 flex-shrink-0" />
+              <Icon className="w-4 h-4 shrink-0" />
               {link.label}
             </Link>
           );
@@ -144,7 +144,7 @@ export default function Sidebar({
               className="w-6 h-6 rounded-full object-cover flex-shrink-0"
             />
           ) : (
-            <div className="w-6 h-6 rounded-full bg-[#2a2a2a] flex items-center justify-center text-xs font-medium text-[#888] flex-shrink-0">
+            <div className="w-6 h-6 rounded-full bg-[#2a2a2a] flex items-center justify-center text-xs font-medium text-[#888] shrink-0">
               {getInitials(userName)}
             </div>
           )}
