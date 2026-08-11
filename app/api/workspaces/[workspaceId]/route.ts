@@ -49,14 +49,15 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { workspaceId: string } },
+  { params }: { params: Promise<{ workspaceId: string }> },
 ) {
   const session = await auth();
+  const { workspaceId } = await params;
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const member = await getWorkspaceMember(params.workspaceId, session.user.id);
+  const member = await getWorkspaceMember(workspaceId, session.user.id);
   if (!member || !["OWNER", "ADMIN"].includes(member.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -64,7 +65,7 @@ export async function PATCH(
   const body = await req.json();
 
   const workspace = await prisma.workspace.update({
-    where: { id: params.workspaceId },
+    where: { id: workspaceId },
     data: body,
   });
 

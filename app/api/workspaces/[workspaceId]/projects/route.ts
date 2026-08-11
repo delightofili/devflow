@@ -11,20 +11,21 @@ async function checkMembership(workspaceId: string, userId: string) {
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: { workspaceId: string } },
+  { params }: { params: Promise<{ workspaceId: string }> },
 ) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const { workspaceId } = await params;
 
-  const member = await checkMembership(params.workspaceId, session.user.id);
+  const member = await checkMembership(workspaceId, session.user.id);
   if (!member) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const projects = await prisma.project.findMany({
-    where: { workspaceId: params.workspaceId },
+    where: { workspaceId: workspaceId },
     include: {
       _count: {
         select: { tasks: true },
@@ -42,14 +43,14 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { workspaceId: string } },
+  { params }: { params: Promise<{ workspaceId: string }> },
 ) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
-  const member = await checkMembership(params.workspaceId, session.user.id);
+  const { workspaceId } = await params;
+  const member = await checkMembership(workspaceId, session.user.id);
   if (!member || !["OWNER", "ADMIN"].includes(member.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -67,7 +68,7 @@ export async function POST(
   const project = await prisma.project.create({
     data: {
       ...parsed.data,
-      workspaceId: params.workspaceId,
+      workspaceId: workspaceId,
     },
   });
 
@@ -76,7 +77,7 @@ export async function POST(
       action: `created project "${project.name}"`,
       entity: "project",
       userId: session.user.id,
-      workspaceId: params.workspaceId,
+      workspaceId: workspaceId,
       projectId: project.id,
     },
   });

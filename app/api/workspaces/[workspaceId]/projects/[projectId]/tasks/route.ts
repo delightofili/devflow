@@ -5,18 +5,19 @@ import { taskSchema } from "@/lib/validations";
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: { workspaceId: string; projectId: string } },
+  { params }: { params: Promise<{ workspaceId: string; projectId: string }> },
 ) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const { workspaceId, projectId } = await params;
 
   const member = await prisma.workspaceMember.findUnique({
     where: {
       userId_workspaceId: {
         userId: session.user.id,
-        workspaceId: params.workspaceId,
+        workspaceId: workspaceId,
       },
     },
   });
@@ -27,7 +28,7 @@ export async function GET(
 
   const tasks = await prisma.task.findMany({
     where: {
-      projectId: params.projectId,
+      projectId: projectId,
       parentId: null,
       // only top-level tasks — subtasks are fetched with their parent
     },
@@ -52,9 +53,10 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { workspaceId: string; projectId: string } },
+  { params }: { params: Promise<{ workspaceId: string; projectId: string }> },
 ) {
   const session = await auth();
+  const { workspaceId, projectId } = await params;
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -63,7 +65,7 @@ export async function POST(
     where: {
       userId_workspaceId: {
         userId: session.user.id,
-        workspaceId: params.workspaceId,
+        workspaceId: workspaceId,
       },
     },
   });
@@ -86,7 +88,7 @@ export async function POST(
   // so new task appears at the bottom of its column
   const lastTask = await prisma.task.findFirst({
     where: {
-      projectId: params.projectId,
+      projectId: projectId,
       status: parsed.data.status || "BACKLOG",
     },
     orderBy: { order: "desc" },
@@ -97,7 +99,7 @@ export async function POST(
     data: {
       ...parsed.data,
       dueDate: parsed.data.dueDate ? new Date(parsed.data.dueDate) : null,
-      projectId: params.projectId,
+      projectId: projectId,
       creatorId: session.user.id,
       order: (lastTask?.order || 0) + 1,
     },
@@ -114,8 +116,8 @@ export async function POST(
       action: `created task "${task.title}"`,
       entity: "task",
       userId: session.user.id,
-      workspaceId: params.workspaceId,
-      projectId: params.projectId,
+      workspaceId: workspaceId,
+      projectId: projectId,
       taskId: task.id,
     },
   });
@@ -127,7 +129,7 @@ export async function POST(
         type: "TASK_ASSIGNED",
         title: "New task assigned",
         body: `You were assigned to "${task.title}"`,
-        url: `/dashboard/${params.workspaceId}/projects/${params.projectId}/tasks/${task.id}`,
+        url: `/dashboard/${workspaceId}/projects/${projectId}/tasks/${task.id}`,
         userId: task.assigneeId,
       },
     });

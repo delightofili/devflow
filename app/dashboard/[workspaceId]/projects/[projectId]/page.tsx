@@ -6,18 +6,20 @@ import { Settings } from "lucide-react";
 import Link from "next/link";
 
 interface PageProps {
-  params: { workspaceId: string; projectId: string };
+  params: Promise<{ workspaceId: string; projectId: string }>;
 }
 
 export default async function ProjectPage({ params }: PageProps) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
+  const { workspaceId, projectId } = await params;
+
   const [project, workspace] = await Promise.all([
     prisma.project.findFirst({
       where: {
-        id: params.projectId,
-        workspaceId: params.workspaceId,
+        id: projectId,
+        workspaceId: workspaceId,
       },
       include: {
         tasks: {
@@ -34,7 +36,7 @@ export default async function ProjectPage({ params }: PageProps) {
       },
     }),
     prisma.workspace.findUnique({
-      where: { id: params.workspaceId },
+      where: { id: workspaceId },
       include: {
         members: {
           include: {
@@ -45,7 +47,7 @@ export default async function ProjectPage({ params }: PageProps) {
     }),
   ]);
 
-  if (!project) redirect(`/dashboard/${params.workspaceId}`);
+  if (!project) redirect(`/dashboard/${workspaceId}`);
 
   const members = workspace?.members.map((m) => m.user) || [];
 
@@ -62,7 +64,7 @@ export default async function ProjectPage({ params }: PageProps) {
   return (
     <div className="flex flex-col h-full">
       {/* project header */}
-      <div className="flex items-center justify-between mb-6 flex-shrink-0">
+      <div className="flex items-center justify-between mb-6 shrink-0">
         <div className="flex items-center gap-3">
           <div
             className="w-3 h-3 rounded-full"
@@ -91,7 +93,7 @@ export default async function ProjectPage({ params }: PageProps) {
           </div>
 
           <Link
-            href={`/dashboard/${params.workspaceId}/projects/${params.projectId}/settings`}
+            href={`/dashboard/${workspaceId}/projects/${projectId}/settings`}
             className="text-[#555] hover:text-white transition-colors"
           >
             <Settings className="w-4 h-4" />
@@ -101,8 +103,8 @@ export default async function ProjectPage({ params }: PageProps) {
 
       {/* kanban board */}
       <KanbanBoard
-        projectId={params.projectId}
-        workspaceId={params.workspaceId}
+        projectId={projectId}
+        workspaceId={workspaceId}
         initialTasks={project.tasks}
         members={members}
       />

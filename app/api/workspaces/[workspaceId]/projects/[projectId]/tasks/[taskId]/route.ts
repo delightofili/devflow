@@ -4,14 +4,18 @@ import { prisma } from "@/lib/prisma";
 
 type Params = { workspaceId: string; projectId: string; taskId: string };
 
-export async function GET(_: NextRequest, { params }: { params: Params }) {
+export async function GET(
+  _: NextRequest,
+  { params }: { params: Promise<Params> },
+) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const { projectId, taskId } = await params;
 
   const task = await prisma.task.findFirst({
-    where: { id: params.taskId, projectId: params.projectId },
+    where: { id: taskId, projectId: projectId },
     include: {
       assignee: { select: { id: true, name: true, image: true, email: true } },
       creator: { select: { id: true, name: true, image: true } },
@@ -41,20 +45,24 @@ export async function GET(_: NextRequest, { params }: { params: Params }) {
   return NextResponse.json(task);
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: Params }) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<Params> },
+) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const { taskId, workspaceId, projectId } = await params;
 
   const body = await req.json();
 
   const oldTask = await prisma.task.findUnique({
-    where: { id: params.taskId },
+    where: { id: taskId },
   });
 
   const task = await prisma.task.update({
-    where: { id: params.taskId },
+    where: { id: taskId },
     data: {
       ...body,
       dueDate: body.dueDate ? new Date(body.dueDate) : undefined,
@@ -72,8 +80,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Params }) {
         action: `changed status to "${body.status}"`,
         entity: "task",
         userId: session.user.id,
-        workspaceId: params.workspaceId,
-        projectId: params.projectId,
+        workspaceId: workspaceId,
+        projectId: projectId,
         taskId: task.id,
       },
     });
@@ -85,7 +93,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Params }) {
           type: "TASK_STATUS_CHANGED",
           title: "Task status updated",
           body: `"${task.title}" moved to ${body.status.replace("_", " ")}`,
-          url: `/dashboard/${params.workspaceId}/projects/${params.projectId}/tasks/${task.id}`,
+          url: `/dashboard/${workspaceId}/projects/${projectId}/tasks/${task.id}`,
           userId: oldTask.creatorId,
         },
       });
@@ -95,12 +103,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Params }) {
   return NextResponse.json(task);
 }
 
-export async function DELETE(_: NextRequest, { params }: { params: Params }) {
+export async function DELETE(
+  _: NextRequest,
+  { params }: { params: Promise<Params> },
+) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const { taskId } = await params;
 
-  await prisma.task.delete({ where: { id: params.taskId } });
+  await prisma.task.delete({ where: { id: taskId } });
   return NextResponse.json({ success: true });
 }

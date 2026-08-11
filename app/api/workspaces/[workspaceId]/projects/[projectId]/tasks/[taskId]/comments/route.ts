@@ -5,11 +5,15 @@ import { commentSchema } from "@/lib/validations";
 
 type Params = { workspaceId: string; projectId: string; taskId: string };
 
-export async function POST(req: NextRequest, { params }: { params: Params }) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<Params> },
+) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const { taskId, projectId, workspaceId } = await params;
 
   const body = await req.json();
   const parsed = commentSchema.safeParse(body);
@@ -24,7 +28,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
   const comment = await prisma.comment.create({
     data: {
       content: parsed.data.content,
-      taskId: params.taskId,
+      taskId: taskId,
       authorId: session.user.id,
     },
     include: {
@@ -34,7 +38,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
 
   // notify task assignee about new comment
   const task = await prisma.task.findUnique({
-    where: { id: params.taskId },
+    where: { id: taskId },
     select: { assigneeId: true, title: true, creatorId: true },
   });
 
@@ -51,7 +55,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
           type: "TASK_COMMENTED",
           title: "New comment",
           body: `Someone commented on "${task?.title}"`,
-          url: `/dashboard/${params.workspaceId}/projects/${params.projectId}/tasks/${params.taskId}`,
+          url: `/dashboard/${workspaceId}/projects/${projectId}/tasks/${taskId}`,
           userId,
         },
       });
@@ -63,9 +67,9 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
       action: "added a comment",
       entity: "task",
       userId: session.user.id,
-      workspaceId: params.workspaceId,
-      projectId: params.projectId,
-      taskId: params.taskId,
+      workspaceId: workspaceId,
+      projectId: projectId,
+      taskId: taskId,
     },
   });
 

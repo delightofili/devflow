@@ -23,7 +23,9 @@ const PROJECT_COLORS = [
 export default function NewProjectPage() {
   const router = useRouter();
   const params = useParams();
-  const workspaceId = params.workspaceId as string;
+  const workspaceId = Array.isArray(params.workspaceId)
+    ? params.workspaceId[0]
+    : (params.workspaceId as string);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
