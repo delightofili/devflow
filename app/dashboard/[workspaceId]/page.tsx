@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { FolderKanban, Users, Plus, ArrowRight } from "lucide-react";
 import { getInitials } from "@/lib/utils";
+import ActivityFeed from "@/components/dashboard/ActivityFeed";
 
 export default function DashboardPage() {
   const { workspace, loading } = useWorkspace();
@@ -186,6 +187,14 @@ export default function DashboardPage() {
                 +{workspace.members.length - 8}
               </div>
             )}
+          </div>
+          <div className="mt-8">
+            <h2 className="text-sm font-medium text-[#888] uppercase tracking-wider mb-4">
+              Recent activity
+            </h2>
+            <div className="bg-[#111] border border-[#1a1a1a] rounded-xl p-5">
+              <ActivityFeed workspaceId={workspaceId} limit={10} />
+            </div>
           </div>
         </div>
       )}
