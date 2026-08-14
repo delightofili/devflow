@@ -2,6 +2,7 @@
 import { Bell } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { useWorkspace } from "@/lib/context/workspace-context";
+import NotificationBell from "./NotiificationBell";
 
 export default function Topbar({
   userName,
@@ -21,7 +22,7 @@ export default function Topbar({
       <div className="flex items-center gap-3">
         {/* notification bell — wired up on Day 9 */}
         <button className="relative w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#1a1a1a] transition-colors text-[#555] hover:text-white">
-          <Bell className="w-4 h-4" />
+          <NotificationBell />
         </button>
 
         {/* user avatar */}
