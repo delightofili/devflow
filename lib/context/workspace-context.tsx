@@ -24,6 +24,7 @@ interface Project {
   name: string;
   color: string;
   status: string;
+  description: string;
 }
 
 interface Workspace {

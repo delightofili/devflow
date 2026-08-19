@@ -21,9 +21,9 @@ export default function Topbar({
 
       <div className="flex items-center gap-3">
         {/* notification bell — wired up on Day 9 */}
-        <button className="relative w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#1a1a1a] transition-colors text-[#555] hover:text-white">
+        <div className="relative w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#1a1a1a] transition-colors text-[#555] hover:text-white">
           <NotificationBell />
-        </button>
+        </div>
 
         {/* user avatar */}
         <div className="w-7 h-7 rounded-full overflow-hidden">
