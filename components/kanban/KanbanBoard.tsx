@@ -2,8 +2,10 @@
 import { useState, useCallback } from "react";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import KanbanColumn from "./KanbanColumn";
-
 import CreateTaskModal from "./CreateTaskModal";
+import ListView from "./ListView";
+import TaskFiltersBar from "./TaskFiltersBar";
+import { useTaskFilters } from "@/lib/useTaskFilters";
 
 export type TaskStatus =
   | "BACKLOG"
@@ -49,9 +51,20 @@ export default function KanbanBoard({
   const [createModalStatus, setCreateModalStatus] = useState<TaskStatus | null>(
     null,
   );
+  const [view, setView] = useState<"kanban" | "list">("kanban");
+
+  const {
+    filters,
+    filteredTasks,
+    updateFilter,
+    clearFilters,
+    hasActiveFilters,
+  } = useTaskFilters(tasks);
 
   const getColumnTasks = (status: TaskStatus) =>
-    tasks.filter((t) => t.status === status).sort((a, b) => a.order - b.order);
+    filteredTasks
+      .filter((t) => t.status === status)
+      .sort((a, b) => a.order - b.order);
 
   const onDragEnd = useCallback(
     async (result: DropResult) => {
@@ -67,7 +80,6 @@ export default function KanbanBoard({
       const newStatus = destination.droppableId as TaskStatus;
       const newOrder = destination.index;
 
-      // optimistic update — update UI immediately without waiting for server
       setTasks((prev) =>
         prev.map((task) =>
           task.id === draggableId
@@ -76,7 +88,6 @@ export default function KanbanBoard({
         ),
       );
 
-      // persist to server in background
       try {
         await fetch(
           `/api/workspaces/${workspaceId}/projects/${projectId}/tasks/reorder`,
@@ -87,7 +98,6 @@ export default function KanbanBoard({
           },
         );
       } catch {
-        // if server update fails, revert to original state
         setTasks(initialTasks);
       }
     },
@@ -100,20 +110,40 @@ export default function KanbanBoard({
   }
 
   return (
-    <div className="flex-1 overflow-hidden">
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-3 h-full overflow-x-auto pb-4">
-          {COLUMNS.map((col) => (
-            <KanbanColumn
-              key={col.status}
-              status={col.status}
-              label={col.label}
-              tasks={getColumnTasks(col.status)}
-              onAddTask={() => setCreateModalStatus(col.status)}
-            />
-          ))}
+    <div className="flex flex-col flex-1 overflow-hidden">
+      <TaskFiltersBar
+        filters={filters}
+        onUpdate={updateFilter}
+        onClear={clearFilters}
+        hasActive={hasActiveFilters}
+        members={members}
+        view={view}
+        onViewChange={setView}
+      />
+
+      {view === "kanban" ? (
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className="flex gap-3 flex-1 overflow-x-auto pb-4">
+            {COLUMNS.map((col) => (
+              <KanbanColumn
+                key={col.status}
+                status={col.status}
+                label={col.label}
+                tasks={getColumnTasks(col.status)}
+                onAddTask={() => setCreateModalStatus(col.status)}
+              />
+            ))}
+          </div>
+        </DragDropContext>
+      ) : (
+        <div className="flex-1 overflow-hidden bg-[#111] border border-[#1a1a1a] rounded-xl">
+          <ListView
+            tasks={filteredTasks}
+            workspaceId={workspaceId}
+            projectId={projectId}
+          />
         </div>
-      </DragDropContext>
+      )}
 
       {createModalStatus && (
         <CreateTaskModal

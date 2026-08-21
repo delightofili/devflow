@@ -7,13 +7,15 @@ import { Plus, ArrowRight } from "lucide-react";
 export default async function ProjectsPage({
   params,
 }: {
-  params: { workspaceId: string };
+  params: Promise<{ workspaceId: string }>;
 }) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
+  const { workspaceId } = await params;
+
   const projects = await prisma.project.findMany({
-    where: { workspaceId: params.workspaceId },
+    where: { workspaceId: workspaceId },
     include: {
       _count: { select: { tasks: true } },
       tasks: {
@@ -33,7 +35,7 @@ export default async function ProjectsPage({
           </p>
         </div>
         <Link
-          href={`/dashboard/${params.workspaceId}/projects/new`}
+          href={`/dashboard/${workspaceId}/projects/new`}
           className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -48,7 +50,7 @@ export default async function ProjectsPage({
             Create your first project to start organizing tasks.
           </p>
           <Link
-            href={`/dashboard/${params.workspaceId}/projects/new`}
+            href={`/dashboard/${workspaceId}/projects/new`}
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
           >
             <Plus className="w-4 h-4" />
@@ -67,7 +69,7 @@ export default async function ProjectsPage({
             return (
               <Link
                 key={project.id}
-                href={`/dashboard/${params.workspaceId}/projects/${project.id}`}
+                href={`/dashboard/${workspaceId}/projects/${project.id}`}
                 className="bg-[#111] border border-[#1a1a1a] rounded-xl p-5 hover:border-[#2a2a2a] transition-colors group"
               >
                 <div className="flex items-start justify-between mb-4">

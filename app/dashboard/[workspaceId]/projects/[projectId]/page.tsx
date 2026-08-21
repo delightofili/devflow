@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import KanbanBoard from "@/components/kanban/KanbanBoard";
-import { Settings } from "lucide-react";
+import { Settings, Flag } from "lucide-react";
 import Link from "next/link";
 
 interface PageProps {
@@ -97,6 +97,13 @@ export default async function ProjectPage({ params }: PageProps) {
             className="text-[#555] hover:text-white transition-colors"
           >
             <Settings className="w-4 h-4" />
+          </Link>
+          <Link
+            href={`/dashboard/${workspaceId}/projects/${projectId}/milestones`}
+            className="flex items-center gap-1.5 text-[#555] hover:text-white text-xs transition-colors border border-[#2a2a2a] hover:border-[#3a3a3a] px-2.5 py-1.5 rounded-lg"
+          >
+            <Flag className="w-3.5 h-3.5" />
+            Milestones
           </Link>
         </div>
       </div>

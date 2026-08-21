@@ -4,6 +4,7 @@ import { useParams, usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useWorkspace } from "@/lib/context/workspace-context";
 import { getInitials } from "@/lib/utils";
+import { useState, useEffect, useRef } from "react";
 import {
   LayoutDashboard,
   FolderKanban,
@@ -12,7 +13,9 @@ import {
   LogOut,
   Plus,
   ChevronDown,
+  Check,
 } from "lucide-react";
+import { WorkspaceSummary } from "@/lib/type";
 
 export default function Sidebar({
   userId,
@@ -27,6 +30,34 @@ export default function Sidebar({
   const pathname = usePathname();
   const workspaceId = params.workspaceId as string;
   const { workspace, loading } = useWorkspace();
+
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  const [workspaces, setWorkspaces] = useState<WorkspaceSummary[]>([]);
+  const switcherRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (
+        switcherRef.current &&
+        !switcherRef.current.contains(e.target as Node)
+      ) {
+        setSwitcherOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  async function handleSwitcherOpen() {
+    if (switcherOpen) {
+      setSwitcherOpen(false);
+      return;
+    }
+    setSwitcherOpen(true);
+    const res = await fetch("/api/workspaces");
+    const data = await res.json();
+    setWorkspaces(data);
+  }
 
   const navLinks = [
     {
@@ -54,9 +85,12 @@ export default function Sidebar({
   return (
     <aside className="w-60 h-full bg-[#111] border-r border-[#1a1a1a] flex flex-col shrink-0">
       {/* workspace switcher */}
-      <div className="p-4 border-b border-[#1a1a1a]">
-        <button className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-[#1a1a1a] transition-colors group">
-          <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
+      <div ref={switcherRef} className="relative p-4 border-b border-[#1a1a1a]">
+        <button
+          onClick={handleSwitcherOpen}
+          className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-[#1a1a1a] transition-colors group"
+        >
+          <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center flex-shrink-0">
             <span className="text-white text-xs font-bold">
               {workspace?.name?.charAt(0) || "W"}
             </span>
@@ -64,8 +98,47 @@ export default function Sidebar({
           <span className="text-white text-sm font-medium truncate flex-1 text-left">
             {loading ? "Loading..." : workspace?.name || "Workspace"}
           </span>
-          <ChevronDown className="w-3.5 h-3.5 text-[#555] group-hover:text-[#888] transition-colors" />
+          <ChevronDown
+            className={`w-3.5 h-3.5 text-[#555] transition-transform ${
+              switcherOpen ? "rotate-180" : ""
+            }`}
+          />
         </button>
+
+        {switcherOpen && (
+          <div className="absolute left-3 right-3 top-full mt-1 bg-[#111] border border-[#2a2a2a] rounded-xl overflow-hidden shadow-2xl z-50">
+            {workspaces.map((ws) => (
+              <Link
+                key={ws.id}
+                href={`/dashboard/${ws.id}`}
+                onClick={() => setSwitcherOpen(false)}
+                className={`flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#1a1a1a] transition-colors ${
+                  ws.id === workspaceId ? "bg-[#1a1a1a]" : ""
+                }`}
+              >
+                <div className="w-5 h-5 rounded-md bg-blue-600 flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-[10px] font-bold">
+                    {ws.name.charAt(0)}
+                  </span>
+                </div>
+                <span className="text-white text-sm truncate">{ws.name}</span>
+                {ws.id === workspaceId && (
+                  <Check className="w-3 h-3 text-blue-400 ml-auto" />
+                )}
+              </Link>
+            ))}
+            <div className="border-t border-[#1a1a1a]">
+              <Link
+                href="/onboarding"
+                onClick={() => setSwitcherOpen(false)}
+                className="flex items-center gap-2.5 px-3 py-2.5 text-[#555] hover:text-white hover:bg-[#1a1a1a] transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="text-sm">Create workspace</span>
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* main nav */}
