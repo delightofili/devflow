@@ -5,6 +5,7 @@ import KanbanBoard from "@/components/kanban/KanbanBoard";
 import { Settings, Flag } from "lucide-react";
 import Link from "next/link";
 import ChatToggle from "@/components/chat/ChatToggle";
+import OnlinePresence from "@/components/dashboard/OnlinePresesnce";
 
 interface PageProps {
   params: Promise<{ workspaceId: string; projectId: string }>;
@@ -92,6 +93,8 @@ export default async function ProjectPage({ params }: PageProps) {
               {taskCounts.done}/{taskCounts.total}
             </span>
           </div>
+
+          <OnlinePresence members={members} />
 
           <Link
             href={`/dashboard/${workspaceId}/projects/${projectId}/settings`}
