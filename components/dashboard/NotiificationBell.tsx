@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from "react";
 import { Bell, X, Check } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useSocket } from "@/lib/hooks/useSocket";
+import { useSession } from "next-auth/react";
 
 interface Notification {
   id: string;
@@ -21,6 +23,22 @@ export default function NotificationBell() {
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const socket = useSocket();
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    socket.on("notification:new", (notification: Notification) => {
+      setCount((prev) => prev + 1);
+
+      if (open) {
+        setNotifications((prev) => [notification, ...prev]);
+      }
+    });
+
+    return () => {
+      socket.off("notification:new");
+    };
+  }, [socket, open]);
 
   async function fetchCount() {
     try {
