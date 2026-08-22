@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import KanbanBoard from "@/components/kanban/KanbanBoard";
 import { Settings, Flag } from "lucide-react";
 import Link from "next/link";
+import ChatToggle from "@/components/chat/ChatToggle";
 
 interface PageProps {
   params: Promise<{ workspaceId: string; projectId: string }>;
@@ -105,6 +106,12 @@ export default async function ProjectPage({ params }: PageProps) {
             <Flag className="w-3.5 h-3.5" />
             Milestones
           </Link>
+
+          <ChatToggle
+            projectId={projectId}
+            workspaceId={workspaceId}
+            projectName={project.name}
+          />
         </div>
       </div>
 

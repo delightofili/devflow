@@ -29,7 +29,6 @@ export default function NotificationBell() {
   useEffect(() => {
     socket.on("notification:new", (notification: Notification) => {
       setCount((prev) => prev + 1);
-
       if (open) {
         setNotifications((prev) => [notification, ...prev]);
       }

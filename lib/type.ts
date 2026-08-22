@@ -16,3 +16,19 @@ export interface ProjectSummary {
   status: string;
   description: string | null;
 }
+
+export interface ChatMessage {
+  id: string;
+  content: string;
+  createdAt: string;
+  author: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  };
+}
+
+export interface TypingUser {
+  userId: string;
+  userName: string;
+}
