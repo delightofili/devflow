@@ -1,11 +1,12 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import KanbanColumn from "./KanbanColumn";
 import CreateTaskModal from "./CreateTaskModal";
 import ListView from "./ListView";
 import TaskFiltersBar from "./TaskFiltersBar";
 import { useTaskFilters } from "@/lib/useTaskFilters";
+import { useProjectSocket } from "@/lib/hooks/useSocket";
 
 export type TaskStatus =
   | "BACKLOG"
@@ -51,6 +52,8 @@ export default function KanbanBoard({
   const [createModalStatus, setCreateModalStatus] = useState<TaskStatus | null>(
     null,
   );
+  const socket = useProjectSocket(projectId);
+
   const [view, setView] = useState<"kanban" | "list">("kanban");
 
   const {
@@ -97,6 +100,14 @@ export default function KanbanBoard({
             body: JSON.stringify({ taskId: draggableId, newStatus, newOrder }),
           },
         );
+        socket.emit("task:updated", {
+          projectId,
+          task: {
+            ...tasks.find((t) => t.id === draggableId),
+            status: newStatus,
+            order: newOrder,
+          },
+        });
       } catch {
         setTasks(initialTasks);
       }
@@ -104,9 +115,34 @@ export default function KanbanBoard({
     [workspaceId, projectId, initialTasks],
   );
 
+  useEffect(() => {
+    // someone else created a task — add it to board
+    socket.on("task:created", (newTask: KanbanTask) => {
+      setTasks((prev) => {
+        const exists = prev.find((t) => t.id === newTask.id);
+        if (exists) return prev;
+        return [...prev, newTask];
+      });
+    });
+
+    // someone else updated a task — update it on board
+    socket.on("task:updated", (updatedTask: KanbanTask) => {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)),
+      );
+    });
+
+    return () => {
+      socket.off("task:created");
+      socket.off("task:updated");
+    };
+  }, [socket]);
+
   function handleTaskCreated(newTask: KanbanTask) {
     setTasks((prev) => [...prev, newTask]);
     setCreateModalStatus(null);
+    // broadcast to other users in this project
+    socket.emit("task:created", { projectId, task: newTask });
   }
 
   return (
