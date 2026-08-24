@@ -14,6 +14,7 @@ import {
   Plus,
   ChevronDown,
   Check,
+  BarChart2,
 } from "lucide-react";
 import { WorkspaceSummary } from "@/lib/type";
 
@@ -69,6 +70,11 @@ export default function Sidebar({
       href: `/dashboard/${workspaceId}/projects`,
       label: "Projects",
       icon: FolderKanban,
+    },
+    {
+      href: `/dashboard/${workspaceId}/analytics`,
+      label: "Analytics",
+      icon: BarChart2,
     },
     {
       href: `/dashboard/${workspaceId}/members`,
