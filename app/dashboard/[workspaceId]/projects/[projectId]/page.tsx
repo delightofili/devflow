@@ -6,6 +6,7 @@ import { Settings, Flag } from "lucide-react";
 import Link from "next/link";
 import ChatToggle from "@/components/chat/ChatToggle";
 import OnlinePresence from "@/components/dashboard/OnlinePresesnce";
+import ProjectAnalysis from "@/components/ai/ProjectAnalysis";
 
 interface PageProps {
   params: Promise<{ workspaceId: string; projectId: string }>;
@@ -115,6 +116,8 @@ export default async function ProjectPage({ params }: PageProps) {
             workspaceId={workspaceId}
             projectName={project.name}
           />
+
+          <ProjectAnalysis projectId={projectId} workspaceId={workspaceId} />
         </div>
       </div>
 

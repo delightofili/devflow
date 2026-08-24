@@ -80,8 +80,10 @@ export default function ProjectAnalysis({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setAnalysis(data);
-    } catch (err: any) {
-      setError(err.message || "Analysis failed. Please try again.");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message || "Analysis failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
