@@ -5,6 +5,7 @@ import { useWorkspace } from "@/lib/context/workspace-context";
 import NotificationBell from "./NotiificationBell";
 import { useSocket } from "@/lib/hooks/useSocket";
 import { useParams } from "next/navigation";
+import SearchPalette from "./SearchPalette";
 
 export default function Topbar({
   userName,
@@ -23,6 +24,10 @@ export default function Topbar({
     <header className="h-12 border-b border-[#1a1a1a] px-6 flex items-center justify-between flex-shrink-0 bg-[#0f0f0f]">
       <div className="flex items-center gap-2 text-sm text-[#555]">
         <span>{workspace?.name}</span>
+      </div>
+
+      <div className="flex-1 flex justify-center">
+        <SearchPalette />
       </div>
 
       <div className="flex items-center gap-3">
