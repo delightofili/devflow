@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Plus, ArrowRight } from "lucide-react";
+import { Plus, ArrowRight, FolderKanban } from "lucide-react";
 
 export default async function ProjectsPage({
   params,
@@ -59,6 +59,27 @@ export default async function ProjectsPage({
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-4">
+          {projects.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-[#1a1a1a] border border-[#2a2a2a] flex items-center justify-center mb-5">
+                <FolderKanban className="w-7 h-7 text-[#333]" />
+              </div>
+              <h3 className="text-white font-semibold text-lg mb-2">
+                No projects yet
+              </h3>
+              <p className="text-[#555] text-sm max-w-xs mb-6 leading-relaxed">
+                Projects are where your team organizes tasks, tracks progress,
+                and communicates. Create your first one to get started.
+              </p>
+              <Link
+                href={`/dashboard/${workspaceId}/projects/new`}
+                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Create first project
+              </Link>
+            </div>
+          )}
           {projects.map((project) => {
             const done = project.tasks.filter(
               (t) => t.status === "DONE",
