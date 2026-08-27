@@ -6,13 +6,16 @@ import NotificationBell from "./NotiificationBell";
 import { useSocket } from "@/lib/hooks/useSocket";
 import { useParams } from "next/navigation";
 import SearchPalette from "./SearchPalette";
+import { Menu } from "lucide-react";
 
 export default function Topbar({
   userName,
   userImage,
+  onMenuClick,
 }: {
   userName: string;
   userImage: string;
+  onMenuClick: () => void;
 }) {
   const { workspace } = useWorkspace();
   const params = useParams();
@@ -22,6 +25,13 @@ export default function Topbar({
 
   return (
     <header className="h-12 border-b border-[#1a1a1a] px-6 flex items-center justify-between flex-shrink-0 bg-[#0f0f0f]">
+      <button
+        onClick={onMenuClick}
+        className="lg:hidden text-[#555] hover:text-white transition-colors mr-3"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
       <div className="flex items-center gap-2 text-sm text-[#555]">
         <span>{workspace?.name}</span>
       </div>
