@@ -7,6 +7,25 @@ import Link from "next/link";
 import ChatToggle from "@/components/chat/ChatToggle";
 import OnlinePresence from "@/components/dashboard/OnlinePresesnce";
 import ProjectAnalysis from "@/components/ai/ProjectAnalysis";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { projectId } = await params;
+
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    select: { name: true, description: true },
+  });
+
+  return {
+    title: project?.name || "Project",
+    description:
+      project?.description || "Manage tasks and collaborate with your team",
+  };
+}
 
 interface PageProps {
   params: Promise<{ workspaceId: string; projectId: string }>;
@@ -122,12 +141,14 @@ export default async function ProjectPage({ params }: PageProps) {
       </div>
 
       {/* kanban board */}
-      <KanbanBoard
-        projectId={projectId}
-        workspaceId={workspaceId}
-        initialTasks={project.tasks}
-        members={members}
-      />
+      <ErrorBoundary>
+        <KanbanBoard
+          projectId={projectId}
+          workspaceId={workspaceId}
+          initialTasks={project.tasks}
+          members={members}
+        />
+      </ErrorBoundary>
     </div>
   );
 }
