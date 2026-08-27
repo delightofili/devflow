@@ -48,56 +48,80 @@ export default function SearchPalette() {
 
   const debouncedQuery = useDebounce(query, 300);
 
+  const openPalette = useCallback(() => {
+    setQuery("");
+    setResults(null);
+    setSelectedIndex(0);
+    setOpen(true);
+  }, []);
+
   // keyboard shortcut — Cmd/Ctrl + K
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        setOpen((prev) => !prev);
+        setOpen((prev) => {
+          if (prev) return false;
+          openPalette();
+          return true;
+        });
       }
       if (e.key === "Escape") setOpen(false);
     }
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [openPalette]);
 
   // focus input when opened
   useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 50);
-      setQuery("");
-      setResults(null);
-      setSelectedIndex(0);
     }
   }, [open]);
 
   // search when query changes
   useEffect(() => {
     if (!debouncedQuery || debouncedQuery.length < 2) {
-      setResults(null);
       return;
     }
 
-    setLoading(true);
-    fetch(
-      `/api/workspaces/${workspaceId}/search?q=${encodeURIComponent(debouncedQuery)}`,
-    )
-      .then((r) => r.json())
-      .then((data) => {
-        setResults(data);
-        setSelectedIndex(0);
-      })
-      .finally(() => setLoading(false));
+    let cancelled = false;
+
+    const search = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `/api/workspaces/${workspaceId}/search?q=${encodeURIComponent(debouncedQuery)}`,
+        );
+        const data = await response.json();
+        if (!cancelled) {
+          setResults(data);
+          setSelectedIndex(0);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    void search();
+    return () => {
+      cancelled = true;
+    };
   }, [debouncedQuery, workspaceId]);
 
+  const visibleResults = query.length >= 2 ? results : null;
+
   const allResults = [
-    ...(results?.projects || []).map((p) => ({
+    ...(visibleResults?.projects || []).map((p) => ({
       type: "project" as const,
       item: p,
     })),
-    ...(results?.tasks || []).map((t) => ({ type: "task" as const, item: t })),
-    ...(results?.members || []).map((m) => ({
+    ...(visibleResults?.tasks || []).map((t) => ({
+      type: "task" as const,
+      item: t,
+    })),
+    ...(visibleResults?.members || []).map((m) => ({
       type: "member" as const,
       item: m,
     })),
@@ -131,15 +155,15 @@ export default function SearchPalette() {
   }
 
   const hasResults =
-    results &&
-    (results.tasks.length > 0 ||
-      results.projects.length > 0 ||
-      results.members.length > 0);
+    visibleResults &&
+    (visibleResults.tasks.length > 0 ||
+      visibleResults.projects.length > 0 ||
+      visibleResults.members.length > 0);
 
   if (!open) {
     return (
       <button
-        onClick={() => setOpen(true)}
+        onClick={openPalette}
         className="flex items-center gap-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-1.5 text-[#444] hover:text-[#888] hover:border-[#3a3a3a] transition-colors text-sm w-48"
       >
         <Search className="w-3.5 h-3.5" />
