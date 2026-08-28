@@ -24,7 +24,7 @@ export default function Topbar({
   useSocket(workspaceId);
 
   return (
-    <header className="h-12 border-b border-[#1a1a1a] px-6 flex items-center justify-between flex-shrink-0 bg-[#0f0f0f]">
+    <header className="h-12 border-b border-[#1a1a1a] px-6 flex items-center justify-between shrink-0 bg-[#0f0f0f]">
       <button
         onClick={onMenuClick}
         className="lg:hidden text-[#555] hover:text-white transition-colors mr-3"

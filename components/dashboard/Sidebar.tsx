@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Check,
   BarChart2,
+  X,
 } from "lucide-react";
 import { WorkspaceSummary } from "@/lib/type";
 
@@ -22,10 +23,12 @@ export default function Sidebar({
   userId,
   userName,
   userImage,
+  onClose,
 }: {
   userId: string;
   userName: string;
   userImage: string;
+  onClose?: () => void;
 }) {
   const params = useParams();
   const pathname = usePathname();
@@ -90,6 +93,12 @@ export default function Sidebar({
 
   return (
     <aside className="w-60 h-full bg-[#111] border-r border-[#1a1a1a] flex flex-col shrink-0">
+      <div className="flex items-center justify-between p-4 border-b border-[#1a1a1a] lg:hidden">
+        <span className="text-white font-semibold text-sm">DevFlow</span>
+        <button onClick={onClose} className="text-[#555] hover:text-white">
+          <X className="w-4 h-4" />
+        </button>
+      </div>
       {/* workspace switcher */}
       <div ref={switcherRef} className="relative p-4 border-b border-[#1a1a1a]">
         <button

@@ -6,26 +6,6 @@ import { useParams } from "next/navigation";
 import { FolderKanban, Users, Plus, ArrowRight } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
-import { prisma } from "@/lib/prisma";
-import { Metadata } from "next";
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ workspaceId: string }>;
-}): Promise<Metadata> {
-  const { workspaceId } = await params;
-
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
-    select: { name: true },
-  });
-
-  return {
-    title: workspace?.name || "Dashboard",
-    description: `${workspace?.name} workspace on DevFlow`,
-  };
-}
 
 export default function DashboardPage() {
   const { workspace, loading } = useWorkspace();
