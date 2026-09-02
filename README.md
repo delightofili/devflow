@@ -1,50 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DevFlow
 
-## Getting Started
+A real-time project management platform built for software development teams.
 
-First, run the development server:
+## Features
+
+- **Workspaces** — multi-tenant, invite-based team management
+- **Kanban boards** — drag and drop with 5 status columns
+- **Real-time collaboration** — task updates and chat powered by Socket.io
+- **Team chat** — per-project channels with typing indicators
+- **Notifications** — real-time via WebSockets, persistent in database
+- **Milestones** — track major project goals and deadlines
+- **Analytics** — task activity, team workload, project progress charts
+- **AI assistant** — project health analysis powered by GPT-4o-mini
+- **Global search** — command palette with keyboard navigation
+- **RBAC** — Owner, Admin, Developer, Viewer roles
+
+## Tech stack
+
+| Layer      | Technology                           |
+| ---------- | ------------------------------------ |
+| Frontend   | Next.js 15, TypeScript, Tailwind CSS |
+| Auth       | NextAuth v5, Google OAuth            |
+| Database   | PostgreSQL, Prisma ORM               |
+| Real-time  | Socket.io                            |
+| Charts     | Recharts                             |
+| AI         | OpenAI GPT-4o-mini                   |
+| Deployment | Render                               |
+
+## Getting started
 
 ```bash
+# clone
+git clone https://github.com/yourusername/devflow.git
+cd devflow
+
+# install
+npm install
+
+# setup env
+cp .env.example .env.local
+# fill in your values
+
+# database
+npx prisma migrate dev
+
+# run
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+DATABASE_URL=
+NEXTAUTH_URL=
+NEXTAUTH_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+OPENAI_API_KEY=
+NEXT_PUBLIC_APP_URL=
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Architecture
 
-## Learn More
+Browser → Render (Node.js server)
+↓
+splits traffic
+↓ ↓
+Next.js Socket.io
+(pages + API) (real-time events)
+↓
+PostgreSQL (Render)
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-<!--
-
-Create app/(auth)/login/page.tsx — your challenge:
-
-Same structure as register but:
-
-Fields: email + password only
-On submit call signIn('credentials', { email, password, redirect: false })
-On success redirect to /dashboard
-Add Google OAuth button same as register
-Link at bottom: "Don't have an account? Sign up"
-
- -->
+Built in public over 15 days. Follow the journey: [@DelightOfili](https://twitter.com/DelightOfili)
