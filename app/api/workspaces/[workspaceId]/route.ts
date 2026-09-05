@@ -74,15 +74,16 @@ export async function PATCH(
 
 export async function DELETE(
   _: NextRequest,
-  { params }: { params: { workspaceId: string } },
+  { params }: { params: Promise<{ workspaceId: string }> },
 ) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const { workspaceId } = await params;
 
   const workspace = await prisma.workspace.findUnique({
-    where: { id: params.workspaceId },
+    where: { id: workspaceId },
   });
 
   if (!workspace) {
@@ -96,6 +97,6 @@ export async function DELETE(
     );
   }
 
-  await prisma.workspace.delete({ where: { id: params.workspaceId } });
+  await prisma.workspace.delete({ where: { id: workspaceId } });
   return NextResponse.json({ success: true });
 }
